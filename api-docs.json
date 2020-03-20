@@ -1,0 +1,1573 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Passportal API",
+        "version": "2.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://us-clover.passportalmsp.com/api/v2",
+            "description": "US Datacenter"
+        },
+        {
+            "url": "https://ca-clover.passportalmsp.com/api/v2",
+            "description": "CA Datacenter"
+        },
+        {
+            "url": "https://uk-clover.passportalmsp.com/api/v2",
+            "description": "UK Datacenter"
+        }
+    ],
+    "paths": {
+        "/auth/client_token": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Issues client token",
+                "description": "Issues a token that can be used by client applications",
+                "operationId": "issueClientToken",
+                "parameters": [
+                    {
+                        "name": "x-key",
+                        "in": "header",
+                        "description": "The API key",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "x-hash",
+                        "in": "header",
+                        "description": "A hashed value using the content string 'aUa&&XUQBJXz2x&' and the secret key hashed using hmac(SHA-256). Ex) hash_hmac('sha256', 'aUa&&XUQBJXz2x&', [apiSecret])",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Additional data",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "scope",
+                                    "content"
+                                ],
+                                "properties": {
+                                    "scope": {
+                                        "description": "The scope of the access token. Available options are 'ad_agent', 'distributor', or 'backup_util'",
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "description": "The un-hashed string 'aUa&&XUQBJXz2x&' ",
+                                        "type": "string"
+                                    },
+                                    "identifier": {
+                                        "description": "An optional identifying name for the token",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "On success, an access token and refresh token will be issued",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "description": "The access token, in JWT format",
+                                            "type": "string"
+                                        },
+                                        "refresh_token": {
+                                            "description": "The refresh token",
+                                            "type": "string"
+                                        },
+                                        "expiry_time": {
+                                            "description": "The expiry time of the access token",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/list_organizations": {
+            "get": {
+                "tags": [
+                    "Distributor"
+                ],
+                "summary": "Gets distributor organizations",
+                "description": "Gets all organizations belonging to the distributor.",
+                "operationId": "getAllOrganizations",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Organization"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Error"
+                                    },
+                                    "example": {
+                                        "success": false,
+                                        "message": "Unexpected Error",
+                                        "code": 10006,
+                                        "status": 500
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/cancel": {
+            "patch": {
+                "tags": [
+                    "Distributor"
+                ],
+                "summary": "Cancels an organization",
+                "description": "Cancels an organization. Users will no longer be able to log in to a cancelled organization.",
+                "operationId": "cancelOrganization",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected Error",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/organization": {
+            "post": {
+                "tags": [
+                    "Distributor"
+                ],
+                "summary": "Creates a new organization",
+                "description": "Creates a new organization that is tied to the distributor.",
+                "operationId": "provisionNewOrganization",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New organization data",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "first_name",
+                                    "last_name"
+                                ],
+                                "properties": {
+                                    "siteLicences": {
+                                        "description": "The number of site licences",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "The organization name",
+                                        "type": "string"
+                                    },
+                                    "distributor_reference": {
+                                        "description": "A unique reference identifier for this organization",
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "description": "The organization's phone number",
+                                        "type": "string"
+                                    },
+                                    "country_id": {
+                                        "description": "The country ID of the organization",
+                                        "type": "integer"
+                                    },
+                                    "region": {
+                                        "description": "The country region where the organization is",
+                                        "type": "string"
+                                    },
+                                    "city": {
+                                        "description": "The city where the organization is",
+                                        "type": "string"
+                                    },
+                                    "postal_code": {
+                                        "description": "The organization's postal code",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "The email of the primary contact / initial user",
+                                        "type": "string"
+                                    },
+                                    "first_name": {
+                                        "description": "The first name of the primary contact / initial user",
+                                        "type": "string"
+                                    },
+                                    "last_name": {
+                                        "description": "The last name of the primary contact / initial user",
+                                        "type": "string"
+                                    },
+                                    "docs_enabled": {
+                                        "description": "Is docs enabled",
+                                        "type": "boolean"
+                                    },
+                                    "site_enabled": {
+                                        "description": "Is site enabled",
+                                        "type": "boolean"
+                                    },
+                                    "blink_enabled": {
+                                        "description": "Is blink enabled",
+                                        "type": "boolean"
+                                    },
+                                    "vat_number": {
+                                        "description": "VAT number",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Organization"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Data Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
+        "/find_organization": {
+            "get": {
+                "tags": [
+                    "Distributor"
+                ],
+                "summary": "Search for an organization",
+                "description": "Searches for organizations that belongs to the distributor based on name, contact, or email.",
+                "operationId": "findOrganization",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Organization name, contact name, or email address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Organization"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Gets the details of an organization",
+                "description": "Gets the details of an organization",
+                "operationId": "getOrganization",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Organization"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Updates an organization",
+                "description": "Gets the details of an organization",
+                "operationId": "getOrganization",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/features": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Gets organization features for organization",
+                "description": "Gets the organization features that have been enabled for the given organization",
+                "operationId": "getOrganizationFeatures",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/OrganizationFeature"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/licence_usage": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Gets user licences and usage for organization",
+                "description": "Gets the user licences and usage for the given organization",
+                "operationId": "getOrganizationLicenceUsage",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/OrganizationFeature"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/addSiteUsers/{number of site users to add}": {
+            "post": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Adds to available site users",
+                "description": "Adds to available site users",
+                "operationId": "addSiteUsers",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    },
+                    {
+                        "name": "site_users",
+                        "in": "path",
+                        "description": "Number of site users to add",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/removeSiteUsers/{number of site users to remove}": {
+            "post": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Removes available site users",
+                "description": "Removes available site users",
+                "operationId": "addSiteUsers",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    },
+                    {
+                        "name": "site_users",
+                        "in": "path",
+                        "description": "Number of site users to remove",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/addProUsers/{number of pro users to add}": {
+            "post": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Adds to available pro users",
+                "description": "Adds to available pro users",
+                "operationId": "addProUsers",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    },
+                    {
+                        "name": "pro_users",
+                        "in": "path",
+                        "description": "Number of pro users to add",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/removeProUsers/{number of pro users to remove}": {
+            "post": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Removes available pro users",
+                "description": "Removes available pro users",
+                "operationId": "removeProUsers",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    },
+                    {
+                        "name": "site_users",
+                        "in": "path",
+                        "description": "Number of pro users to remove",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/features/{organization_feature_id}": {
+            "post": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Adds available organization features",
+                "description": "Adds available organization features",
+                "operationId": "addFeature",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    },
+                    {
+                        "name": "organization_feature_id",
+                        "in": "path",
+                        "description": "Organization feature ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/OrganizationFeature"
+                            }
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "in": "query",
+                        "description": "The price of the feature (Distributor Only)",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "seats",
+                        "in": "query",
+                        "description": "The number of user seats for the feature (Distributor Only)",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "trial",
+                        "in": "query",
+                        "description": "Is trial period enabled (Distributor Only)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Remove a feature from the organization",
+                "description": "Remove a feature from the organization",
+                "operationId": "removeFeature",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    },
+                    {
+                        "name": "organization_feature_id",
+                        "in": "path",
+                        "description": "Organization feature ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/OrganizationFeature"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/update_credit_card": {
+            "post": {
+                "tags": [
+                    "Distributor"
+                ],
+                "summary": "Updates the credit card information for an organization",
+                "description": "Updates the credit card information for an organization",
+                "operationId": "updateCreditCard",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New credit card data",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "number": {
+                                        "description": "The credit card number",
+                                        "type": "string"
+                                    },
+                                    "exp_month": {
+                                        "description": "The expiry month, 2 digits",
+                                        "type": "string"
+                                    },
+                                    "exp_year": {
+                                        "description": "The expiry year, 4 digits",
+                                        "type": "string"
+                                    },
+                                    "cvc": {
+                                        "description": "The security number on the back of the card",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "The name that appears on the credit card",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Invalid Data Exception"
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
+        "/organization/{organization_id}/billing_information": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Gets the organization's billing information",
+                "description": "Gets the organization's billing information",
+                "operationId": "getBillingInfo",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BillingData"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Sets billing data for an organization (Distributor only)",
+                "description": "Sets the billing data for an organization. This route is currently only usable for distributors modifying distributee accounts",
+                "operationId": "setBillingInfo",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "path",
+                        "description": "Organization ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "items": {
+                                "$ref": "#/components/schemas/Organization"
+                            }
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New organization billing data. All fields are optional.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "package_price": {
+                                        "description": "The package price without docs enabled",
+                                        "type": "number"
+                                    },
+                                    "docs_price": {
+                                        "description": "The docs feature price",
+                                        "type": "number"
+                                    },
+                                    "pro_seats": {
+                                        "description": "The number of included pro users",
+                                        "type": "number"
+                                    },
+                                    "pro_price": {
+                                        "description": "The price of pro overages",
+                                        "type": "number"
+                                    },
+                                    "docs_pro_price": {
+                                        "description": "The price of pro user overages if docs is enabled",
+                                        "type": "number"
+                                    },
+                                    "docs_enabled": {
+                                        "description": "Is docs enabled",
+                                        "type": "boolean"
+                                    },
+                                    "docs_trial": {
+                                        "description": "The number of trial months for docs",
+                                        "type": "number"
+                                    },
+                                    "threshold_users": {
+                                        "description": "The number of users that the organization can have before they lose their discount (no discount if set to 0)",
+                                        "type": "number"
+                                    },
+                                    "threshold_discount": {
+                                        "description": "The discount that gets applied to the organization's package price if they are under their user threshold",
+                                        "type": "number"
+                                    },
+                                    "threshold_docs_discount": {
+                                        "description": "The discount that gets applied to the docs price if they are under their user threshold",
+                                        "type": "number"
+                                    },
+                                    "site_enabled": {
+                                        "description": "Is site enabled",
+                                        "type": "boolean"
+                                    },
+                                    "site_seats": {
+                                        "description": "The number of site seats",
+                                        "type": "number"
+                                    },
+                                    "site_price": {
+                                        "description": "The flat site monthly price",
+                                        "type": "number"
+                                    },
+                                    "site_trial": {
+                                        "description": "The number of trial months for site",
+                                        "type": "number"
+                                    },
+                                    "blink_enabled": {
+                                        "description": "Is blink enabled",
+                                        "type": "boolean"
+                                    },
+                                    "blink_seats": {
+                                        "description": "The number of blink seats",
+                                        "type": "number"
+                                    },
+                                    "blink_price": {
+                                        "description": "The flat blink monthly price",
+                                        "type": "number"
+                                    },
+                                    "blink_trial": {
+                                        "description": "The number of trial months for blink",
+                                        "type": "number"
+                                    },
+                                    "discount_amount": {
+                                        "description": "The flat discount amount",
+                                        "type": "number"
+                                    },
+                                    "discount_expires": {
+                                        "description": "The date the discount expires (in the format: YYYY-MM-DD)",
+                                        "type": "string"
+                                    },
+                                    "suspend_billing": {
+                                        "description": "The number of months to exclude the org from recieving invoices",
+                                        "type": "number"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Invalid Data Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected Error"
+                    }
+                }
+            }
+        },
+        "/organization_features": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Gets all available organization features",
+                "description": "Gets all available organization features",
+                "operationId": "getAvailableOrganizationFeatures",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/OrganizationFeature"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/countries": {
+            "get": {
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Gets valid country list",
+                "description": "Gets valid country list",
+                "operationId": "getCountryList",
+                "parameters": [
+                    {
+                        "name": "x-access-token",
+                        "in": "header",
+                        "description": "Access token",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Country"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authorization Exception"
+                    },
+                    "500": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Error": {
+                "title": "Error",
+                "required": [
+                    "success",
+                    "message",
+                    "code",
+                    "status"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "code": {
+                        "description": "For internal error tracking",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                },
+                "type": "object"
+            },
+            "Organization": {
+                "title": "Organization",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "description": "The name of the organization",
+                        "type": "string"
+                    },
+                    "contact": {
+                        "description": "The name of the primary contact for the organization",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "The email of the primary contact for the organization",
+                        "type": "string"
+                    },
+                    "address": {
+                        "description": "The organization address",
+                        "type": "string"
+                    },
+                    "city": {
+                        "description": "The organization city",
+                        "type": "string"
+                    },
+                    "region": {
+                        "description": "The organization region",
+                        "type": "string"
+                    },
+                    "country_id": {
+                        "$ref": "#/components/schemas/Country"
+                    },
+                    "postal_code": {
+                        "description": "The organization postal code",
+                        "type": "string"
+                    },
+                    "phone": {
+                        "description": "The organization phone number",
+                        "type": "string"
+                    },
+                    "session_timeout": {
+                        "description": "Time in minutes that the session is active for",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "trusted_location_timeout": {
+                        "description": "Time in minutes that the session is active for in trusted locations",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "session_keep_alive": {
+                        "description": "",
+                        "type": "boolean"
+                    },
+                    "default_rotation_policy": {
+                        "description": "",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "login_attempts_allowed": {
+                        "description": "",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "account_lockout_duration": {
+                        "description": "",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "default_temporary_access_duration": {
+                        "description": "",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "tfa_enabled": {
+                        "description": "",
+                        "type": "boolean"
+                    },
+                    "distributor_reference": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "support_email": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "description": "",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Country": {
+                "title": "Country",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "description": "The country name",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "OrganizationFeature": {
+                "title": "OrganizationFeature",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "description": "The feature name",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingData": {
+                "title": "BillingData",
+                "properties": {
+                    "package_price": {
+                        "description": "The package price without docs enabled",
+                        "type": "number"
+                    },
+                    "docs_price": {
+                        "description": "The docs feature price",
+                        "type": "number"
+                    },
+                    "pro_seats": {
+                        "description": "The number of included pro users",
+                        "type": "number"
+                    },
+                    "pro_price": {
+                        "description": "The price of pro overages",
+                        "type": "number"
+                    },
+                    "docs_pro_price": {
+                        "description": "The price of pro user overages if docs is enabled",
+                        "type": "number"
+                    },
+                    "docs_enabled": {
+                        "description": "Is docs enabled",
+                        "type": "boolean"
+                    },
+                    "docs_trial": {
+                        "description": "The number of trial months for docs",
+                        "type": "number"
+                    },
+                    "threshold_users": {
+                        "description": "The number of users that the organization can have before they lose their discount (no discount if set to 0)",
+                        "type": "number"
+                    },
+                    "threshold_discount": {
+                        "description": "The discount that gets applied to the organization's package price if they are under their user threshold",
+                        "type": "number"
+                    },
+                    "threshold_docs_discount": {
+                        "description": "The discount that gets applied to the docs price if they are under their user threshold",
+                        "type": "number"
+                    },
+                    "site_enabled": {
+                        "description": "Is site enabled",
+                        "type": "boolean"
+                    },
+                    "site_seats": {
+                        "description": "The number of site seats",
+                        "type": "number"
+                    },
+                    "site_price": {
+                        "description": "The flat site monthly price",
+                        "type": "number"
+                    },
+                    "site_trial": {
+                        "description": "The number of trial months for site",
+                        "type": "number"
+                    },
+                    "blink_enabled": {
+                        "description": "Is blink enabled",
+                        "type": "boolean"
+                    },
+                    "blink_seats": {
+                        "description": "The number of blink seats",
+                        "type": "number"
+                    },
+                    "blink_price": {
+                        "description": "The flat blink monthly price",
+                        "type": "number"
+                    },
+                    "blink_trial": {
+                        "description": "The number of trial months for blink",
+                        "type": "number"
+                    },
+                    "discount_amount": {
+                        "description": "The flat discount amount",
+                        "type": "number"
+                    },
+                    "discount_expires": {
+                        "description": "The date the discount expires (in the format: YYYY-MM-DD)",
+                        "type": "string"
+                    },
+                    "suspend_billing": {
+                        "description": "The number of months to exclude the org from recieving invoices",
+                        "type": "number"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Distributor",
+            "description": "Distributor only routes"
+        }
+    ]
+}
